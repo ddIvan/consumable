@@ -250,6 +250,18 @@ MQTT Broker → _on_message()
        └→ WebSocket 广播状态
 ```
 
+### MQTT 重连机制
+
+MQTT 连接与前端页面无关，后端进程启动后始终在后台运行。
+
+| 机制 | 说明 |
+|------|------|
+| 自动重连 | paho-mqtt `reconnect_delay_set(min_delay=1s, max_delay=60s)` — 断线后 1 秒开始尝试，指数退避到 60 秒 |
+| 健康检查 | 后台线程每 30 秒检查所有客户端连接状态，发现断开则重启客户端 |
+| 启动恢复 | Docker 容器重启后，应用启动时自动从数据库读取启用的打印机并重连 |
+
+即使浏览器不打开，后端依然持续接收 MQTT 消息并记录到 `mqtt_messages` 表、实时扣减料盘余量。
+
 ### 多色打印支持
 
 - 每次 `_deduct_filament()` 时，将 delta 归因到 `_last_tray`（即上一次 report 时的 tray）

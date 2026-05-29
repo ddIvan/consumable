@@ -110,8 +110,24 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("Could not auto-start printers: %s", e)
 
+    # start MQTT health checker (every 30s)
+    import threading as _threading
+    _health_event = _threading.Event()
+
+    def _mqtt_health_loop():
+        while not _health_event.is_set():
+            _health_event.wait(30)
+            try:
+                manager.health_check()
+            except Exception:
+                logger.exception("MQTT health check error")
+
+    _health_thread = _threading.Thread(target=_mqtt_health_loop, daemon=True)
+    _health_thread.start()
+
     yield
 
+    _health_event.set()
     manager.stop_all()
 
 

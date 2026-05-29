@@ -70,11 +70,16 @@ class PrinterMqttClient:
 
     def start(self):
         if self.client:
-            return
+            # 如果已有 client，先检查是否需要重启
+            if self._connected:
+                return
+            self.stop()
         self.client = mqtt.Client(
             client_id=f"fm-{self.printer.serial}-{int(time.time())}",
             protocol=mqtt.MQTTv311,
         )
+        # 自动重连：断开后 1s 开始尝试，最长间隔 60s
+        self.client.reconnect_delay_set(min_delay=1, max_delay=60)
         ssl_ctx = ssl.create_default_context()
         ssl_ctx.check_hostname = False
         ssl_ctx.verify_mode = ssl.CERT_NONE
@@ -411,6 +416,17 @@ class ConnectionManager:
 
     def get(self, printer_id: int) -> Optional[PrinterMqttClient]:
         return self._printers.get(printer_id)
+
+    def health_check(self):
+        """Periodic check: restart clients that are disconnected."""
+        import logging as _logging
+        for client in list(self._printers.values()):
+            if not client.connected:
+                _logging.getLogger(__name__).warning(
+                    "MQTT health: %s disconnected, restarting...", client.printer.name,
+                )
+                client.stop()
+                client.start()
 
 
 manager = ConnectionManager()
