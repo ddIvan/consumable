@@ -46,7 +46,7 @@
         </el-menu-item>
       </el-menu>
     </el-aside>
-    <el-container>
+    <el-container class="app-right">
       <el-header class="app-header">
         <h2>{{ route.meta.title }}</h2>
         <div class="header-right">
@@ -103,9 +103,23 @@ function connectWs(printerId: number) {
 }
 </script>
 
+<style>
+/* Global: eliminate body scrollbar */
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+</style>
+
 <style scoped>
 .app-container {
   height: 100vh;
+  overflow: hidden;
+}
+.app-right {
+  overflow: hidden;
 }
 .app-aside {
   background-color: #1d1e1f;
