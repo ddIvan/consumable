@@ -1,0 +1,10 @@
+# Filament Manager Configuration
+# Database paths are relative to /app/data inside the container
+
+app:
+  name: "Filament Manager"
+  debug: false
+
+# Environment variables override these (prefix FM_):
+# FM_DATABASE_URL=sqlite:///./data/filament.db
+# FM_DEBUG=false
